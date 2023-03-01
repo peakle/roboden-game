@@ -4,6 +4,7 @@ import (
 	"math"
 
 	"github.com/quasilyte/ge"
+	"github.com/quasilyte/ge/xslices"
 	"github.com/quasilyte/gmath"
 	"github.com/quasilyte/gsignal"
 	"github.com/quasilyte/roboden-game/assets"
@@ -69,13 +70,15 @@ type colonyCoreNode struct {
 	evoPoints        float64
 	world            *worldState
 
-	agents *colonyAgentContainer
+	agents  *colonyAgentContainer
+	turrets []*colonyAgentNode
 
 	planner *colonyActionPlanner
 
 	openHatchTime float64
 
-	realRadius float64
+	realRadius    float64
+	realRadiusSqr float64
 
 	upkeepDelay float64
 
@@ -105,6 +108,7 @@ func newColonyCoreNode(config colonyConfig) *colonyCoreNode {
 		realRadius: config.Radius,
 		maxHealth:  100,
 	}
+	c.realRadiusSqr = c.realRadius * c.realRadius
 	c.actionPriorities = newWeightContainer(priorityResources, priorityGrowth, priorityEvolution, prioritySecurity)
 	c.factionWeights = newWeightContainer(neutralFactionTag, yellowFactionTag, redFactionTag, greenFactionTag, blueFactionTag)
 	c.factionWeights.SetWeight(neutralFactionTag, 1.0)
@@ -176,7 +180,9 @@ func (c *colonyCoreNode) Init(scene *ge.Scene) {
 	}
 }
 
-func (c *colonyCoreNode) IsFlying() bool { return false }
+func (c *colonyCoreNode) IsFlying() bool {
+	return false
+}
 
 func (c *colonyCoreNode) MaxFlyDistance() float64 {
 	return 180.0 + (float64(c.agents.servoNum) * 30.0)
@@ -233,6 +239,9 @@ func (c *colonyCoreNode) Destroy() {
 	c.agents.Each(func(a *colonyAgentNode) {
 		a.OnDamage(damageValue{health: 1000}, gmath.Vec{})
 	})
+	for _, turret := range c.turrets {
+		turret.OnDamage(damageValue{health: 1000}, gmath.Vec{})
+	}
 	c.EventDestroyed.Emit(c)
 	c.Dispose()
 }
@@ -280,6 +289,14 @@ func (c *colonyCoreNode) NewColonyAgentNode(stats *agentStats, pos gmath.Vec) *c
 func (c *colonyCoreNode) DetachAgent(a *colonyAgentNode) {
 	a.EventDestroyed.Disconnect(c)
 	c.agents.Remove(a)
+}
+
+func (c *colonyCoreNode) AcceptTurret(turret *colonyAgentNode) {
+	turret.EventDestroyed.Connect(c, func(x *colonyAgentNode) {
+		c.turrets = xslices.Remove(c.turrets, x)
+	})
+	c.turrets = append(c.turrets, turret)
+	turret.colonyCore = c
 }
 
 func (c *colonyCoreNode) AcceptAgent(a *colonyAgentNode) {
@@ -410,6 +427,9 @@ func (c *colonyCoreNode) calcUpkeed() (float64, int) {
 		}
 		upkeepTotal += a.stats.upkeep
 	})
+	for _, turret := range c.turrets {
+		upkeepTotal += turret.stats.upkeep
+	}
 	upkeepDecrease = gmath.ClampMax(upkeepDecrease, 10)
 	upkeepTotal = gmath.ClampMin(upkeepTotal-(upkeepDecrease*15), 0)
 	if resourcesPriority := c.GetResourcePriority(); resourcesPriority > 0.2 {
@@ -572,7 +592,12 @@ func (c *colonyCoreNode) tryExecutingAction(action colonyAction) bool {
 					connectedWorker = a
 				}
 			}
-			evoGain += 0.1
+			if a.faction == blueFactionTag {
+				// 20% more evo points per blue drones.
+				evoGain += 0.12
+			} else {
+				evoGain += 0.1
+			}
 			return false
 		})
 		if connectedWorker != nil {
@@ -603,13 +628,27 @@ func (c *colonyCoreNode) tryExecutingAction(action colonyAction) bool {
 		})
 		return true
 
+	case actionRepairTurret:
+		repairCost := 8.0
+		ok := false
+		if c.resources < repairCost {
+			return false
+		}
+		c.pickWorkerUnits(1, func(a *colonyAgentNode) {
+			if a.AssignMode(agentModeRepairTurret, gmath.Vec{}, action.Value) {
+				c.resources -= repairCost
+				ok = true
+			}
+		})
+		return ok
+
 	case actionRepairBase:
 		repairCost := 10.0
 		ok := false
+		if c.resources < repairCost {
+			return false
+		}
 		c.pickWorkerUnits(1, func(a *colonyAgentNode) {
-			if c.resources < repairCost {
-				return
-			}
 			if a.AssignMode(agentModeRepairBase, gmath.Vec{}, nil) {
 				c.resources -= repairCost
 				ok = true
@@ -617,16 +656,17 @@ func (c *colonyCoreNode) tryExecutingAction(action colonyAction) bool {
 		})
 		return ok
 
-	case actionBuildBase:
+	case actionBuildBuilding:
 		sendCost := 4.0
-		maxNumAgents := gmath.Clamp(c.agents.NumAvailableWorkers()/10, 1, 5)
+		maxNumAgents := gmath.Clamp(c.agents.NumAvailableWorkers()/10, 1, 6)
 		minNumAgents := gmath.Clamp(c.agents.NumAvailableWorkers()/15, 1, 3)
 		toAssign := c.scene.Rand().IntRange(minNumAgents, maxNumAgents)
+		// TODO: prefer green workers?
 		c.pickWorkerUnits(toAssign, func(a *colonyAgentNode) {
 			if c.resources < sendCost {
 				return
 			}
-			if a.AssignMode(agentModeBuildBase, gmath.Vec{}, action.Value) {
+			if a.AssignMode(agentModeBuildBuilding, gmath.Vec{}, action.Value) {
 				c.resources -= sendCost
 			}
 		})
@@ -649,17 +689,22 @@ func (c *colonyCoreNode) tryExecutingAction(action colonyAction) bool {
 		return true
 
 	case actionGetReinforcements:
-		wantWorkers := c.scene.Rand().IntRange(1, 3)
-		wantWarriors := c.scene.Rand().IntRange(0, 2)
+		wantWorkers := c.scene.Rand().IntRange(2, 4)
+		wantWarriors := c.scene.Rand().IntRange(1, 2)
 		transferUnit := func(dst, src *colonyCoreNode, a *colonyAgentNode) {
 			src.DetachAgent(a)
 			dst.AcceptAgent(a)
 			a.AssignMode(agentModeAlignStandby, gmath.Vec{}, nil)
 		}
 		srcColony := action.Value.(*colonyCoreNode)
+		workersSent := 0
 		srcColony.pickWorkerUnits(wantWorkers, func(a *colonyAgentNode) {
+			workersSent++
 			transferUnit(c, srcColony, a)
 		})
+		if workersSent == 0 {
+			return false
+		}
 		srcColony.pickCombatUnits(wantWarriors, func(a *colonyAgentNode) {
 			transferUnit(c, srcColony, a)
 		})
@@ -697,7 +742,7 @@ func (c *colonyCoreNode) tryExecutingAction(action colonyAction) bool {
 		attacker := action.Value.(*creepNode)
 		numAgents := c.scene.Rand().IntRange(2, 4)
 		c.pickCombatUnits(numAgents, func(a *colonyAgentNode) {
-			if a.mode == agentModeStandby {
+			if a.mode == agentModeStandby && a.CanAttack(attacker.TargetKind()) {
 				a.AssignMode(agentModeFollow, gmath.Vec{}, attacker)
 			}
 		})
@@ -707,7 +752,9 @@ func (c *colonyCoreNode) tryExecutingAction(action colonyAction) bool {
 		attacker := action.Value.(*creepNode)
 		numAgents := c.scene.Rand().IntRange(2, 4)
 		c.pickCombatUnits(numAgents, func(a *colonyAgentNode) {
-			a.AssignMode(agentModeFollow, gmath.Vec{}, attacker)
+			if a.CanAttack(attacker.TargetKind()) {
+				a.AssignMode(agentModeFollow, gmath.Vec{}, attacker)
+			}
 		})
 		return true
 

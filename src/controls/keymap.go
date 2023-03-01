@@ -15,6 +15,7 @@ const (
 	ActionPanLeft
 	ActionPanUp
 	ActionPanAlt
+	ActionPanDrag
 
 	ActionToggleColony
 
@@ -23,6 +24,8 @@ const (
 	ActionBack
 
 	ActionDebug
+
+	ActionMoveCursor
 
 	ActionChoice1
 	ActionChoice2
@@ -39,21 +42,24 @@ func BindKeymap(ctx *ge.Context, state *session.State) {
 		ActionPanLeft:  {input.KeyLeft, input.KeyGamepadLStickLeft, input.KeyGamepadLeft},
 		ActionPanUp:    {input.KeyUp, input.KeyGamepadLStickUp, input.KeyGamepadUp},
 		ActionPanAlt:   {input.KeyMouseMiddle},
+		ActionPanDrag:  {input.KeyTouchDrag},
 
 		ActionToggleColony: {input.KeyTab, input.KeyGamepadL1},
 
 		ActionDebug: {input.KeyBackquote},
 
-		ActionBack: {input.KeyEscape},
+		ActionBack: {input.KeyEscape, input.KeyGamepadBack},
 
 		ActionChoice1:    {input.Key1, input.KeyQ, input.KeyGamepadY},
 		ActionChoice2:    {input.Key2, input.KeyW, input.KeyGamepadB},
 		ActionChoice3:    {input.Key3, input.KeyE, input.KeyGamepadA},
 		ActionChoice4:    {input.Key4, input.KeyR, input.KeyGamepadX},
 		ActionChoice5:    {input.Key5, input.KeyT, input.KeyGamepadR1},
-		ActionMoveChoice: {input.KeyMouseRight},
+		ActionMoveChoice: {input.KeyMouseRight, input.KeyGamepadRStick, input.KeyTouchTap},
 
-		ActionClick: {input.KeyMouseLeft, input.KeyTouchTap},
+		ActionMoveCursor: {input.KeyGamepadRStickMotion},
+
+		ActionClick: {input.KeyMouseLeft, input.KeyGamepadRStick, input.KeyTouchTap},
 	}
 
 	state.MainInput = ctx.Input.NewHandler(0, keymap)

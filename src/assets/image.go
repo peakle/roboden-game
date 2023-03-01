@@ -16,20 +16,28 @@ func registerImageResources(ctx *ge.Context) {
 
 		ImageUpkeepBar: {Path: "image/upkeep_bar.png"},
 
-		ImageChoiceWindow:         {Path: "image/ui/choice_window.png"},
-		ImageChoiceRechargeWindow: {Path: "image/ui/choice_recharge_window.png"},
-		ImageTutorialDialogue:     {Path: "image/ui/window_tutorial.png"},
+		ImageCursor: {Path: "image/cursor.png"},
 
-		ImageRadar:         {Path: "image/ui/radar.png"},
-		ImageRadarWave:     {Path: "image/ui/radar_wave.png"},
-		ImageRadarBossFar:  {Path: "image/ui/radar_boss_far.png"},
-		ImageRadarBossNear: {Path: "image/ui/radar_boss_near.png"},
+		ImageTutorialDialogue: {Path: "image/ui/window_tutorial.png"},
 
-		ImageLogoBg:     {Path: "image/ui/logo_bg.png"},
-		ImageYellowLogo: {Path: "image/ui/yellow_logo.png"},
-		ImageRedLogo:    {Path: "image/ui/red_logo.png"},
-		ImageGreenLogo:  {Path: "image/ui/green_logo.png"},
-		ImageBlueLogo:   {Path: "image/ui/blue_logo.png"},
+		ImageRadar:            {Path: "image/ui/radar.png"},
+		ImageRadarWave:        {Path: "image/ui/radar_wave.png"},
+		ImageRadarBossFar:     {Path: "image/ui/radar_boss_far.png"},
+		ImageRadarBossNear:    {Path: "image/ui/radar_boss_near.png"},
+		ImageButtonMenu:       {Path: "image/ui/menu_button.png"},
+		ImageButtonBaseToggle: {Path: "image/ui/base_toggle_button.png"},
+
+		ImageFloppyYellow: {Path: "image/ui/floppy_yellow.png"},
+		ImageFloppyRed:    {Path: "image/ui/floppy_red.png"},
+		ImageFloppyGreen:  {Path: "image/ui/floppy_green.png"},
+		ImageFloppyBlue:   {Path: "image/ui/floppy_blue.png"},
+		ImageFloppyGray:   {Path: "image/ui/floppy_gray.png"},
+
+		ImageActionBuildColony:    {Path: "image/ui/action_build_colony.png"},
+		ImageActionBuildTurret:    {Path: "image/ui/action_build_turret.png"},
+		ImageActionAttack:         {Path: "image/ui/action_attack.png"},
+		ImageActionIncreaseRadius: {Path: "image/ui/action_increase_radius.png"},
+		ImageActionDecreaseRadius: {Path: "image/ui/action_decrease_radius.png"},
 
 		ImageSmallExplosion1:   {Path: "image/effects/small_explosion1.png", FrameWidth: 32},
 		ImageVerticalExplosion: {Path: "image/effects/vertical_explosion.png", FrameWidth: 50},
@@ -43,6 +51,7 @@ func registerImageResources(ctx *ge.Context) {
 		ImageColonyCoreDiode:    {Path: "image/colony_core_diode.png", FrameWidth: 4},
 		ImageColonyCoreShadow:   {Path: "image/colony_core_shadow.png"},
 
+		ImageGunpointAgent:  {Path: "image/drones/gunpoint_agent.png"},
 		ImageWorkerAgent:    {Path: "image/drones/worker_agent.png", FrameWidth: 9},
 		ImageMilitiaAgent:   {Path: "image/drones/militia_agent.png", FrameWidth: 11},
 		ImageMortarAgent:    {Path: "image/drones/mortar_agent.png", FrameWidth: 21},
@@ -61,7 +70,11 @@ func registerImageResources(ctx *ge.Context) {
 		ImageRedminerAgent:  {Path: "image/drones/redminer_agent.png", FrameWidth: 13},
 		ImageGeneratorAgent: {Path: "image/drones/generator_agent.png", FrameWidth: 15},
 
-		ImageColonyDamageMask: {Path: "image/colony_damage_mask.png"},
+		ImageColonyDamageMask:  {Path: "image/colony_damage_mask.png"},
+		ImageTurretDamageMask1: {Path: "image/turret_damage_mask1.png"},
+		ImageTurretDamageMask2: {Path: "image/turret_damage_mask2.png"},
+		ImageTurretDamageMask3: {Path: "image/turret_damage_mask3.png"},
+		ImageTurretDamageMask4: {Path: "image/turret_damage_mask4.png"},
 
 		ImageEssenceSourceDissolveMask:    {Path: "image/resources/essence_source_dissolve_mask.png"},
 		ImageEssenceCrystalSource:         {Path: "image/resources/crystal_source.png", FrameWidth: 16},
@@ -99,6 +112,7 @@ func registerImageResources(ctx *ge.Context) {
 		ImageCripplerProjectile:     {Path: "image/projectile/crippler_projectile.png"},
 		ImageMilitiaProjectile:      {Path: "image/projectile/militia_projectile.png"},
 		ImageRepellerProjectile:     {Path: "image/projectile/repeller_projectile.png"},
+		ImageGunpointProjectile:     {Path: "image/projectile/gunpoint_projectile.png"},
 		ImageFighterProjectile:      {Path: "image/projectile/fighter_projectile.png"},
 		ImageWandererProjectile:     {Path: "image/projectile/wanderer_projectile.png"},
 		ImageFlamerProjectile:       {Path: "image/projectile/flamer_projectile.png"},
@@ -142,14 +156,15 @@ const (
 	ImageMediumShadow
 	ImageBigShadow
 
-	ImageChoiceWindow
-	ImageChoiceRechargeWindow
+	ImageCursor
 	ImageTutorialDialogue
 
 	ImageRadar
 	ImageRadarWave
 	ImageRadarBossFar
 	ImageRadarBossNear
+	ImageButtonMenu
+	ImageButtonBaseToggle
 
 	ImageSmallExplosion1
 	ImageVerticalExplosion
@@ -158,13 +173,23 @@ const (
 	ImageUpkeepBar
 
 	ImageColonyDamageMask
+	ImageTurretDamageMask1
+	ImageTurretDamageMask2
+	ImageTurretDamageMask3
+	ImageTurretDamageMask4
 	ImageEssenceSourceDissolveMask
 
-	ImageLogoBg
-	ImageYellowLogo
-	ImageRedLogo
-	ImageGreenLogo
-	ImageBlueLogo
+	ImageFloppyYellow
+	ImageFloppyRed
+	ImageFloppyGreen
+	ImageFloppyBlue
+	ImageFloppyGray
+
+	ImageActionBuildColony
+	ImageActionBuildTurret
+	ImageActionAttack
+	ImageActionIncreaseRadius
+	ImageActionDecreaseRadius
 
 	ImageFactionDiode
 	ImageUberBoss
@@ -177,6 +202,7 @@ const (
 	ImageColonyCoreHatch
 	ImageColonyCoreDiode
 	ImageColonyCoreShadow
+	ImageGunpointAgent
 	ImageWorkerAgent
 	ImageGeneratorAgent
 	ImageMilitiaAgent
@@ -225,6 +251,7 @@ const (
 	ImageCripplerProjectile
 	ImageMilitiaProjectile
 	ImageRepellerProjectile
+	ImageGunpointProjectile
 	ImageFighterProjectile
 	ImageWandererProjectile
 	ImageFlamerProjectile

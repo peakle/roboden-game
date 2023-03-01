@@ -121,6 +121,9 @@ func (p *colonyActionPlanner) pickGatherAction() colonyAction {
 }
 
 func (p *colonyActionPlanner) combatUnitProbability() float64 {
+	if len(p.colony.agents.workers) < 2 {
+		return 0
+	}
 	minCombatUnits := int(p.colony.GetSecurityPriority() * 20)
 	if p.colony.GetSecurityPriority() > 0.1 && len(p.colony.agents.fighters) < minCombatUnits {
 		return 0.9
@@ -134,15 +137,10 @@ func (p *colonyActionPlanner) combatUnitProbability() float64 {
 }
 
 func (p *colonyActionPlanner) pickCloner() *colonyAgentNode {
-	var bestCandidate *colonyAgentNode
-	p.colony.agents.Find(searchWorkers|searchOnlyAvailable, func(a *colonyAgentNode) bool {
-		if a.energy < agentCloningEnergyCost() || a.energyBill != 0 {
-			return true
-		}
-		bestCandidate = a
-		return a.faction == greenFactionTag
+	cloner := p.colony.agents.Find(searchWorkers|searchOnlyAvailable, func(a *colonyAgentNode) bool {
+		return a.energy >= agentCloningEnergyCost() && a.energyBill == 0
 	})
-	return bestCandidate
+	return cloner
 }
 
 func (p *colonyActionPlanner) pickUnitToClone(cloner *colonyAgentNode, combat bool) *colonyAgentNode {
@@ -175,6 +173,9 @@ func (p *colonyActionPlanner) pickUnitToClone(cloner *colonyAgentNode, combat bo
 		// are not as numerous as some others.
 		scoreMultiplier := gmath.ClampMin(1.0/float64(agentCountTable[a.stats.kind]), 0.1)
 		score := ((1.25 * float64(a.stats.tier)) * scoreMultiplier) * p.world.rand.FloatRange(0.7, 1.3)
+		if a.faction != neutralFactionTag {
+			score *= 1.1
+		}
 		if score > bestScore {
 			bestScore = score
 			bestCandidate = a
@@ -185,7 +186,6 @@ func (p *colonyActionPlanner) pickUnitToClone(cloner *colonyAgentNode, combat bo
 }
 
 func (p *colonyActionPlanner) maybeCloneAgent(combatUnit bool) colonyAction {
-	// TODO: prefer a green cloner.
 	cloner := p.pickCloner()
 	if cloner == nil {
 		return colonyAction{}
@@ -206,23 +206,42 @@ func (p *colonyActionPlanner) maybeCloneAgent(combatUnit bool) colonyAction {
 }
 
 func (p *colonyActionPlanner) pickGrowthAction() colonyAction {
-	canRepair := p.colony.agents.NumAvailableWorkers() != 0 &&
+	canRepairColony := p.colony.agents.NumAvailableWorkers() != 0 &&
 		p.colony.health < p.colony.maxHealth &&
 		p.colony.resources > 30
-	if canRepair && p.world.rand.Chance(0.25) {
+	if canRepairColony && p.world.rand.Chance(0.25) {
 		return colonyAction{
 			Kind:     actionRepairBase,
 			TimeCost: 0.4,
 		}
 	}
+	canRepairTurret := p.colony.agents.NumAvailableWorkers() != 0 &&
+		p.colony.resources > 40 &&
+		len(p.colony.turrets) > 0
+	if canRepairTurret && p.world.rand.Chance(0.3) {
+		for _, turret := range p.colony.turrets {
+			if turret.health >= turret.maxHealth*0.9 {
+				continue
+			}
+			distSqr := turret.pos.DistanceSquaredTo(p.colony.pos)
+			if distSqr > p.colony.realRadiusSqr*1.2 {
+				continue
+			}
+			return colonyAction{
+				Kind:     actionRepairTurret,
+				Value:    turret,
+				TimeCost: 0.3,
+			}
+		}
+	}
 
 	canBuild := p.colony.agents.NumAvailableWorkers() != 0 &&
-		len(p.world.coreConstructions) != 0 &&
+		len(p.world.constructions) != 0 &&
 		p.colony.resources > 30
 	if canBuild && p.world.rand.Chance(0.55) {
-		var construction *colonyCoreConstructionNode
+		var construction *constructionNode
 		closest := 0.0
-		for _, c := range p.world.coreConstructions {
+		for _, c := range p.world.constructions {
 			if c.attention > 2 {
 				continue
 			}
@@ -237,14 +256,18 @@ func (p *colonyActionPlanner) pickGrowthAction() colonyAction {
 		}
 		if construction != nil {
 			return colonyAction{
-				Kind:     actionBuildBase,
+				Kind:     actionBuildBuilding,
 				Value:    construction,
 				TimeCost: 0.35,
 			}
 		}
 	}
 
-	combatUnit := p.world.rand.Chance(p.combatUnitProbability())
+	combatUnitChance := p.combatUnitProbability()
+	combatUnit := false
+	if combatUnitChance != 0 {
+		combatUnit = p.world.rand.Chance(combatUnitChance)
+	}
 
 	if !combatUnit && p.colony.NumAgents() > p.colony.calcUnitLimit() {
 		return colonyAction{}
@@ -380,7 +403,7 @@ func (p *colonyActionPlanner) pickEvolutionAction() colonyAction {
 		}
 	}
 
-	if p.colony.agents.TotalNum() >= 15 && p.colony.factionWeights.GetWeight(neutralFactionTag) < 0.6 {
+	if p.colony.agents.TotalNum() > 15 && len(p.colony.agents.workers) > 5 && p.colony.factionWeights.GetWeight(neutralFactionTag) < 0.6 {
 		// Are there any drones to recycle?
 		recycleOther := p.world.rand.Chance(0.35)
 		toRecycle := p.colony.agents.Find(searchWorkers|searchFighters|searchRandomized, func(a *colonyAgentNode) bool {

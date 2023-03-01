@@ -7,20 +7,22 @@ todo engine:
 - why animation affects Y axis?
 
 todo:
-- don't send attacking units that can't attack target
+- make menu/toggle buttons transparent a bit (like other windows)
+- make tutorial device-aware; if gamepad is connected, tell controller bindings; if it's a mobile device, tell about touch controls
+- add turrets to a pathgrid?
+- enemies focus 1 turret too much (see FindColonyAgent)
+- FindColonyAgent should use agents container for iteration
 - add antiair missle fire effect
 - show resources when base is flying
+- maybe add x4 zoom scale (toggable in-game)
 - consider taking a target size into account when calculating impact range
 - controls rebinding
 - move world generation to a background task and add a loading screen that waits for it?
 - make low energy fighters fire at a slower rate
-- crawlers should not walk through the base
 - base selector is hidden by shadow
 - falling base should have damaged shader applied too
-- send nearby crawlers to save the boss if it is under attack
 - add fullscreen option (disable/enable windowed mode)
 - menu buttons focus?
-- show enemy bases on the radar
 - base should check landing zone before landing
 - rework planner action delay (same action vs other action)
 - is morale damage even viable?
