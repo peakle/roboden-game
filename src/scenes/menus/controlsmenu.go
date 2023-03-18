@@ -35,7 +35,7 @@ func (c *ControlsMenuController) initUI() {
 	uiResources := eui.LoadResources(c.scene.Context().Loader)
 
 	root := eui.NewAnchorContainer()
-	rowContainer := eui.NewRowLayoutContainer()
+	rowContainer := eui.NewRowLayoutContainer(10, nil)
 	root.AddChild(rowContainer)
 
 	d := c.scene.Dict()
@@ -43,7 +43,7 @@ func (c *ControlsMenuController) initUI() {
 	normalFont := c.scene.Context().Loader.LoadFont(assets.FontNormal).Face
 	smallFont := c.scene.Context().Loader.LoadFont(assets.FontSmall).Face
 
-	titleLabel := eui.NewLabel(uiResources, d.Get("menu.main.title")+" -> "+d.Get("menu.main.controls"), normalFont)
+	titleLabel := eui.NewCenteredLabel(uiResources, d.Get("menu.main.title")+" -> "+d.Get("menu.main.controls"), normalFont)
 	rowContainer.AddChild(titleLabel)
 
 	rowContainer.AddChild(eui.NewSeparator(widget.RowLayoutData{Stretch: true}))

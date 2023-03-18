@@ -6,14 +6,9 @@ import (
 	resource "github.com/quasilyte/ebitengine-resource"
 	"github.com/quasilyte/ge"
 	"github.com/quasilyte/gmath"
+	"github.com/quasilyte/roboden-game/assets"
+	"github.com/quasilyte/roboden-game/gamedata"
 	"github.com/quasilyte/roboden-game/viewport"
-)
-
-type projectileExplosionKind int
-
-const (
-	projectileExplosionNone projectileExplosionKind = iota
-	projectileExplosionNormal
 )
 
 type projectileNode struct {
@@ -22,7 +17,7 @@ type projectileNode struct {
 	toPos     gmath.Vec
 	target    projectileTarget
 	fireDelay float64
-	weapon    *weaponStats
+	weapon    *gamedata.WeaponStats
 
 	rotation gmath.Rad
 
@@ -41,45 +36,18 @@ type projectileNode struct {
 type projectileTarget interface {
 	GetPos() *gmath.Vec
 	GetVelocity() gmath.Vec
-	OnDamage(damage damageValue, source gmath.Vec)
+	OnDamage(damage gamedata.DamageValue, source gmath.Vec)
 	IsDisposed() bool
 	IsFlying() bool
 }
 
-type targetKind int
-
-const (
-	targetFlying targetKind = 1 << iota
-	targetGround
-)
-
-type weaponStats struct {
-	MaxTargets            int
-	ProjectileImage       resource.ImageID
-	ProjectileSpeed       float64
-	ProjectileRotateSpeed float64
-	ImpactArea            float64
-	ImpactAreaSqr         float64 // A precomputed ImpactArea*ImpactArea value
-	AttackRange           float64
-	Damage                damageValue
-	Explosion             projectileExplosionKind
-	BurstSize             int
-	BurstDelay            float64
-	Reload                float64
-	AttackSound           resource.AudioID
-	FireOffset            gmath.Vec
-	ArcPower              float64
-	TargetFlags           targetKind
-	RoundProjectile       bool
-}
-
-func initWeaponStats(stats *weaponStats) *weaponStats {
+func initWeaponStats(stats *gamedata.WeaponStats) *gamedata.WeaponStats {
 	stats.ImpactAreaSqr = stats.ImpactArea * stats.ImpactArea
 	return stats
 }
 
 type projectileConfig struct {
-	Weapon    *weaponStats
+	Weapon    *gamedata.WeaponStats
 	Camera    *viewport.Camera
 	FromPos   *gmath.Vec
 	ToPos     gmath.Vec
@@ -124,10 +92,14 @@ func (p *projectileNode) Init(scene *ge.Scene) {
 	if p.fireDelay > 0 {
 		p.sprite.Visible = false
 	}
-	p.camera.AddGraphicsAbove(p.sprite)
+	p.camera.AddSpriteAbove(p.sprite)
 
 	if p.arcProgressionScaling != 0 {
-		if scene.Rand().Chance(0.4) {
+		missChance := 0.1
+		if p.target.IsFlying() {
+			missChance = 0.4
+		}
+		if scene.Rand().Chance(missChance) {
 			// Most likely will be a miss.
 			p.toPos = p.toPos.Add(scene.Rand().Offset(-28, 28))
 		}
@@ -182,10 +154,31 @@ func (p *projectileNode) detonate() {
 	if p.toPos.DistanceSquaredTo(*p.target.GetPos()) > p.weapon.ImpactAreaSqr {
 		return
 	}
+
+	dmg := p.weapon.Damage
+	if dmg.Health != 0 {
+		var multiplier float64
+		if p.target.IsFlying() {
+			multiplier = p.weapon.FlyingTargetDamageMult
+		} else {
+			multiplier = p.weapon.GroundTargetDamageMult
+		}
+		dmg.Health *= multiplier
+	}
 	p.target.OnDamage(p.weapon.Damage, *p.fromPos)
 
-	switch p.weapon.Explosion {
-	case projectileExplosionNormal:
-		createExplosion(p.scene, p.camera, p.target.IsFlying(), p.pos.Add(p.scene.Rand().Offset(-3, 3)))
+	explosionKind := p.weapon.Explosion
+	if explosionKind == gamedata.ProjectileExplosionNone {
+		return
+	}
+	explosionPos := p.pos.Add(p.scene.Rand().Offset(-3, 3))
+	switch explosionKind {
+	case gamedata.ProjectileExplosionNormal:
+		createExplosion(p.scene, p.camera, p.target.IsFlying(), explosionPos)
+	case gamedata.ProjectilePurpleExplosion:
+		soundIndex := p.scene.Rand().IntRange(0, 2)
+		sound := assets.AudioPurpleExplosion1 + resource.AudioID(soundIndex)
+		p.scene.AddObject(newEffectNode(p.camera, explosionPos, p.target.IsFlying(), assets.ImagePurpleExplosion))
+		playSound(p.scene, p.camera, sound, explosionPos)
 	}
 }

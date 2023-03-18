@@ -10,8 +10,9 @@ type droneFallNode struct {
 	world *worldState
 	scene *ge.Scene
 
-	image       resource.ImageID
-	shadowImage resource.ImageID
+	image        resource.ImageID
+	shadowImage  resource.ImageID
+	FrameOffsetY float64
 
 	sprite *ge.Sprite
 	shadow *ge.Sprite
@@ -41,11 +42,14 @@ func (d *droneFallNode) Init(scene *ge.Scene) {
 	d.sprite = scene.NewSprite(d.image)
 	d.sprite.Pos.Base = &d.pos
 	d.sprite.Rotation = &d.rotation
-	d.world.camera.AddGraphics(d.sprite)
+	d.sprite.FrameOffset.Y = d.FrameOffsetY
+	d.world.camera.AddSprite(d.sprite)
 
-	d.shadow = scene.NewSprite(d.shadowImage)
-	d.shadow.Pos.Base = &d.pos
-	d.world.camera.AddGraphicsBelow(d.shadow)
+	if d.world.graphicsSettings.ShadowsEnabled {
+		d.shadow = scene.NewSprite(d.shadowImage)
+		d.shadow.Pos.Base = &d.pos
+		d.world.camera.AddSpriteBelow(d.shadow)
+	}
 
 	d.height -= 4
 	d.pos.Y += 4
@@ -53,7 +57,9 @@ func (d *droneFallNode) Init(scene *ge.Scene) {
 
 func (d *droneFallNode) Destroy() {
 	d.sprite.Dispose()
-	d.shadow.Dispose()
+	if d.shadow != nil {
+		d.shadow.Dispose()
+	}
 
 	createAreaExplosion(d.scene, d.world.camera, spriteRect(d.pos, d.sprite), true)
 
@@ -80,7 +86,9 @@ func (d *droneFallNode) Update(delta float64) {
 
 	d.rotation += gmath.Rad(delta * 2)
 
-	d.shadow.Pos.Offset.Y = d.height + 4
-	newShadowAlpha := float32(1.0 - ((d.height / agentFlightHeight) * 0.5))
-	d.shadow.SetAlpha(newShadowAlpha)
+	if d.shadow != nil {
+		d.shadow.Pos.Offset.Y = d.height + 4
+		newShadowAlpha := float32(1.0 - ((d.height / agentFlightHeight) * 0.5))
+		d.shadow.SetAlpha(newShadowAlpha)
+	}
 }

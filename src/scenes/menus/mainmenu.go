@@ -9,7 +9,6 @@ import (
 	"github.com/quasilyte/ge"
 	"github.com/quasilyte/roboden-game/assets"
 	"github.com/quasilyte/roboden-game/gameui/eui"
-	"github.com/quasilyte/roboden-game/scenes/staging"
 	"github.com/quasilyte/roboden-game/session"
 )
 
@@ -45,7 +44,7 @@ func (c *MainMenuController) initUI() {
 	uiResources := eui.LoadResources(c.scene.Context().Loader)
 
 	root := eui.NewAnchorContainer()
-	rowContainer := eui.NewRowLayoutContainer()
+	rowContainer := eui.NewRowLayoutContainer(10, nil)
 	root.AddChild(rowContainer)
 
 	bigFont := c.scene.Context().Loader.LoadFont(assets.FontBig).Face
@@ -53,18 +52,13 @@ func (c *MainMenuController) initUI() {
 
 	d := c.scene.Dict()
 
-	titleLabel := eui.NewLabel(uiResources, d.Get("game.title"), bigFont)
+	titleLabel := eui.NewCenteredLabel(uiResources, d.Get("game.title"), bigFont)
 	rowContainer.AddChild(titleLabel)
 
 	rowContainer.AddChild(eui.NewSeparator(widget.RowLayoutData{Stretch: true}))
 
-	rowContainer.AddChild(eui.NewButton(uiResources, c.scene, d.Get("menu.main.start_game"), func() {
-		c.scene.Context().ChangeScene(NewLobbyMenuController(c.state))
-	}))
-
-	rowContainer.AddChild(eui.NewButton(uiResources, c.scene, d.Get("menu.main.tutorial"), func() {
-		c.state.LevelOptions.Tutorial = true
-		c.scene.Context().ChangeScene(staging.NewController(c.state, 0, NewMainMenuController(c.state)))
+	rowContainer.AddChild(eui.NewButton(uiResources, c.scene, d.Get("menu.main.play"), func() {
+		c.scene.Context().ChangeScene(NewPlayMenuController(c.state))
 	}))
 
 	rowContainer.AddChild(eui.NewButton(uiResources, c.scene, d.Get("menu.main.settings"), func() {
@@ -87,7 +81,7 @@ func (c *MainMenuController) initUI() {
 
 	rowContainer.AddChild(eui.NewSeparator(widget.RowLayoutData{Stretch: true}))
 
-	buildVersionLabel := eui.NewLabel(uiResources, fmt.Sprintf("%s %d (alpha testing)", d.Get("menu.main.build"), buildNumber), smallFont)
+	buildVersionLabel := eui.NewCenteredLabel(uiResources, fmt.Sprintf("%s %d (alpha testing)", d.Get("menu.main.build"), buildNumber), smallFont)
 	rowContainer.AddChild(buildVersionLabel)
 
 	uiObject := eui.NewSceneObject(root)

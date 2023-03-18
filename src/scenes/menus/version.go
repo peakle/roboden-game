@@ -68,7 +68,15 @@ package menus
 //   - Drones with charging mode no longer confuse creeps (we're clearing the waypoint now)
 //   - Fixed crawlers "never scout" bug
 //
-// # Version 6
+// # Version 7 (was uploaded as version 6 by accident)
+//
+// * New features:
+//   - Red crystals resource
+//   - Drone ranks (normal, elite, super elite)
+//
+// * Gameplay
+//   - Increased a colony drone limit
+//   - Added more colony drone traits
 //
 // * UX:
 //   - Made it clear which option was selected
@@ -78,4 +86,12 @@ package menus
 //
 // * Fixes:
 //   - Upon defeat, hide menu and toggle buttons
-const buildNumber int = 6
+//   - Fixed resource collection bug (drone cargo value stacking)
+//
+// * Performance:
+//   - Use a pre-decoded ogg stream instead of decoding it on the fly
+//   - Since 99% graphic objects are ge.Sprite, they're now stored as separate slices (less iface calls)
+//
+// # Version 8
+// So many things happened, but I forgot to write them down.
+const buildNumber int = 8

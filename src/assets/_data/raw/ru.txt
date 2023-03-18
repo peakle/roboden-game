@@ -13,6 +13,11 @@
 ##menu.more : Ещё
 ##menu.lobby_back : Назад в Меню
 
+##menu.options.sound : Звук
+##menu.options.graphics : Графика
+##menu.options.camera : Камера
+##menu.options.extra : Дополнительно
+
 ##menu.option.on : вкл
 ##menu.option.off : выкл
 
@@ -21,6 +26,12 @@
 ##menu.option.normal : средне
 ##menu.option.rich : много
 ##menu.option.very_rich : очень много
+
+##menu.option.none : никаких
+##menu.option.some : немного
+##menu.option.full : много
+##menu.option.mandatory : только необходимые
+##menu.option.all : все
 
 ##menu.option.very_easy : очень легко
 ##menu.option.easy : легко
@@ -36,14 +47,25 @@
 ##menu.options.edge_scroll_range : Ширина Границы Прокрутки
 ##menu.options.debug : Режим Отладки
 
+##menu.options.graphics.shadows : Тени
+##menu.options.graphics.shaders : Шейдеры
+##menu.options.graphics.fullscreen : Полноэкранный режим
+
 ##menu.credits.crew : команда
 ##menu.credits.assets : ассеты
 ##menu.credits.thank_player : И тебе спасибо, дорогой игрок <3
 
 ##menu.lobby.world_resources : Ресурсы Мира
 ##menu.lobby.world_size : Размер Мира
-##menu.lobby.difficulty : Сложность
+##menu.lobby.creeps_difficulty : Кол-во Баз Противника
+##menu.lobby.boss_difficulty : Сила Босса
+##menu.lobby.starting_resources : Стартовые Ресурсы
 ##menu.lobby.go : Вперёд!
+
+##menu.lobby.tab.colony : Колония
+##menu.lobby.tab.world : Мир
+##menu.lobby.tab.difficulty : Сложность
+##menu.lobby.tab.extra : Доп
 
 ##menu.results.victory : Победа
 ##menu.results.defeat : Поражение
@@ -238,3 +260,21 @@
 
 ##tutorial.message_last
 Удачи и хорошей охоты.
+
+##drone.function : Функция
+##drone.kind.worker : рабочий
+##drone.kind.military : военный
+##drone.kind.universal : универсальный
+
+##drone.freighter : Грузовой
+##drone.redminer : Алый Рудокоп
+##drone.crippler : Охотник
+##drone.fighter : Боец
+##drone.prism : Призма
+##drone.servo : Ускоритель
+##drone.repeller : Отпугиватель
+##drone.repair : Ремонтник
+##drone.recharger : Заряжатель
+##drone.generator : Генератор
+##drone.mortar : Мортира
+##drone.antiair : Ракетчик

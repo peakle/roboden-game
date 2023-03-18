@@ -9,6 +9,7 @@ import (
 
 	"github.com/quasilyte/roboden-game/assets"
 	"github.com/quasilyte/roboden-game/controls"
+	"github.com/quasilyte/roboden-game/gamedata"
 	"github.com/quasilyte/roboden-game/scenes/menus"
 	"github.com/quasilyte/roboden-game/session"
 	"github.com/quasilyte/roboden-game/userdevice"
@@ -17,9 +18,20 @@ import (
 func main() {
 	state := &session.State{
 		LevelOptions: session.LevelOptions{
-			Resources:  2,
-			Difficulty: 2,
-			WorldSize:  2,
+			Resources:         2,
+			CreepsDifficulty:  2,
+			BossDifficulty:    1,
+			WorldSize:         2,
+			StartingResources: 0,
+			Tier2Recipes: []gamedata.AgentMergeRecipe{
+				gamedata.FindRecipe(gamedata.ClonerAgentStats),
+				gamedata.FindRecipe(gamedata.FighterAgentStats),
+				gamedata.FindRecipe(gamedata.RepairAgentStats),
+				gamedata.FindRecipe(gamedata.FreighterAgentStats),
+				gamedata.FindRecipe(gamedata.CripplerAgentStats),
+				gamedata.FindRecipe(gamedata.RedminerAgentStats),
+				gamedata.FindRecipe(gamedata.ServoAgentStats),
+			},
 		},
 		Persistent: session.PersistentData{
 			// The default settings.
@@ -30,6 +42,11 @@ func main() {
 				EdgeScrollRange:    2,
 				Debug:              false,
 				Lang:               inferDefaultLang(),
+				Graphics: session.GraphicsSettings{
+					ShadowsEnabled:    true,
+					AllShadersEnabled: true,
+					FullscreenEnabled: true,
+				},
 			},
 		},
 		Device: userdevice.GetInfo(),
@@ -45,13 +62,14 @@ func main() {
 	ctx.WindowTitle = "Roboden"
 	ctx.WindowWidth = 1920 / 2
 	ctx.WindowHeight = 1080 / 2
-	ctx.FullScreen = true
 
 	assets.Register(ctx)
 	controls.BindKeymap(ctx, state)
 
 	ctx.LoadGameData("save", &state.Persistent)
 	state.ReloadLanguage(ctx)
+
+	ctx.FullScreen = state.Persistent.Settings.Graphics.FullscreenEnabled
 
 	fmt.Println("is mobile?", state.Device.IsMobile)
 
