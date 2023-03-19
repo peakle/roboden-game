@@ -4,6 +4,7 @@ import (
 	resource "github.com/quasilyte/ebitengine-resource"
 	"github.com/quasilyte/ge"
 	"github.com/quasilyte/gmath"
+
 	"github.com/quasilyte/roboden-game/assets"
 	"github.com/quasilyte/roboden-game/pathing"
 	"github.com/quasilyte/roboden-game/viewport"
