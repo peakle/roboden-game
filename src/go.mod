@@ -12,6 +12,8 @@ require (
 	golang.org/x/image v0.5.0
 )
 
+replace github.com/quasilyte/ge v0.0.0-20230301222223-9ccd6adfef3e => github.com/peakle/ge v0.0.2
+
 require (
 	github.com/ebitengine/purego v0.1.1 // indirect
 	github.com/go-gl/glfw/v3.3/glfw v0.0.0-20221017161538-93cebf72946b // indirect
