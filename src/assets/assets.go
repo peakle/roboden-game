@@ -2,7 +2,9 @@ package assets
 
 import (
 	"embed"
+	"fmt"
 	"io"
+	"time"
 
 	"github.com/quasilyte/ge"
 )
@@ -40,11 +42,18 @@ func Register(ctx *ge.Context) {
 		return f
 	}
 
+	start := time.Now()
+	fmt.Println("start: ", start)
 	registerImageResources(ctx)
-	// registerAudioResource(ctx)
-	// registerShaderResources(ctx)
-	// registerFontResources(ctx)
+	fmt.Println("image: ", time.Since(start))
+	registerAudioResource(ctx)
+	fmt.Println("audio: ", time.Since(start))
+	registerShaderResources(ctx)
+	fmt.Println("shader: ", time.Since(start))
+	registerFontResources(ctx)
+	fmt.Println("fond: ", time.Since(start))
 	registerRawResources(ctx)
+	fmt.Println("end: ", time.Since(start))
 }
 
 //go:embed all:_data
