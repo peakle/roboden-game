@@ -45,7 +45,7 @@ func main() {
 				Graphics: session.GraphicsSettings{
 					ShadowsEnabled:    true,
 					AllShadersEnabled: true,
-					FullscreenEnabled: true,
+					FullscreenEnabled: false,
 				},
 			},
 		},
