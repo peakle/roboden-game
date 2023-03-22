@@ -65,7 +65,7 @@ func main() {
 
 func inferDefaultLang() string {
 	languages := ge.InferLanguages()
-	defaultLanguage := "en"
+	defaultLanguage := "ru"
 	selectedLanguage := ""
 	for _, l := range languages {
 		switch l {
