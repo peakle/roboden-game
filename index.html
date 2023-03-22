@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 
-<script src="_web/wasm_exec.js"></script>
+<script src="wasm_exec.js"></script>
 <script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js"></script>
 
 <script>
@@ -12,7 +12,7 @@
     }
 
     const go = new Go();
-    WebAssembly.instantiateStreaming(fetch("_web/main.wasm"), go.importObject).then(result => {
+    WebAssembly.instantiateStreaming(fetch("main.wasm"), go.importObject).then(result => {
         go.run(result.instance);
     });
 
