@@ -79,13 +79,16 @@ func (c *MainMenuController) initUI() {
 
 	//goland:noinspection GoBoolExpressions
 	if runtime.GOARCH == "wasm" {
-		fmt.Println("invite result: ", vk.InviteFriends())
+		rowContainer.AddChild(eui.NewButton(uiResources, c.scene, d.Get("menu.main.invite_friends"), func() {
+			fmt.Println("invite result: ", vk.InviteFriends())
+		}))
 	} else {
 		rowContainer.AddChild(eui.NewButton(uiResources, c.scene, d.Get("menu.main.credits"), func() {
 			c.scene.Context().ChangeScene(NewCreditsMenuController(c.state))
 		}))
 	}
 
+	//goland:noinspection GoBoolExpressions
 	if runtime.GOARCH != "wasm" {
 		rowContainer.AddChild(eui.NewButton(uiResources, c.scene, d.Get("menu.main.exit"), func() {
 			os.Exit(0)

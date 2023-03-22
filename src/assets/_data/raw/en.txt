@@ -6,6 +6,7 @@
 ##menu.main.settings : Settings
 ##menu.main.controls : Controls
 ##menu.main.credits : Credits
+##menu.main.invite_friends : Invite friends
 ##menu.main.exit : Exit
 ##menu.main.build : Build
 

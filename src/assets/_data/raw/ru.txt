@@ -6,6 +6,7 @@
 ##menu.main.settings : Настройки
 ##menu.main.controls : Управление
 ##menu.main.credits : Авторы
+##menu.main.invite_friends : Пригласить друзей
 ##menu.main.exit : Выход
 ##menu.main.build : Версия
 
