@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 
-<script src="wasm_exec.js"></script>
+<script src="_web/wasm_exec.js"></script>
+<script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js"></script>
 
 <script>
     if (!WebAssembly.instantiateStreaming) {
@@ -11,11 +12,23 @@
     }
 
     const go = new Go();
-    WebAssembly.instantiateStreaming(fetch("main.wasm"), go.importObject).then(result => {
+    WebAssembly.instantiateStreaming(fetch("_web/main.wasm"), go.importObject).then(result => {
         go.run(result.instance);
     });
 
-    window.addEventListener("load", function() {
+    window.addEventListener("load", function () {
         document.body.focus();
     });
+
+    vkBridge.send('VKWebAppInit');
+
+    function invitePopup(key) {
+        vkBridge.send('VKWebAppShowInviteBox', {
+            requestKey: key //  Ключ приглашения
+        }).then((data) => {
+            return data.toString()
+        }).catch((error) => {
+            return error.toString()
+        });
+    }
 </script>

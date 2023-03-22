@@ -7,8 +7,10 @@ import (
 
 	"github.com/ebitenui/ebitenui/widget"
 	"github.com/quasilyte/ge"
+
 	"github.com/quasilyte/roboden-game/assets"
 	"github.com/quasilyte/roboden-game/gameui/eui"
+	"github.com/quasilyte/roboden-game/scenes/menus/intergrations/vk"
 	"github.com/quasilyte/roboden-game/scenes/staging"
 	"github.com/quasilyte/roboden-game/session"
 )
@@ -75,9 +77,14 @@ func (c *MainMenuController) initUI() {
 		c.scene.Context().ChangeScene(NewControlsMenuController(c.state))
 	}))
 
-	rowContainer.AddChild(eui.NewButton(uiResources, c.scene, d.Get("menu.main.credits"), func() {
-		c.scene.Context().ChangeScene(NewCreditsMenuController(c.state))
-	}))
+	//goland:noinspection GoBoolExpressions
+	if runtime.GOARCH == "wasm" {
+		fmt.Println("invite result: ", vk.InviteFriends())
+	} else {
+		rowContainer.AddChild(eui.NewButton(uiResources, c.scene, d.Get("menu.main.credits"), func() {
+			c.scene.Context().ChangeScene(NewCreditsMenuController(c.state))
+		}))
+	}
 
 	if runtime.GOARCH != "wasm" {
 		rowContainer.AddChild(eui.NewButton(uiResources, c.scene, d.Get("menu.main.exit"), func() {
